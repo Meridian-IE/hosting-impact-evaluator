@@ -85,6 +85,7 @@ contract IE {
         maybeAdvanceRound();
     }
 
+    // TODO: Change data structures to not need nested loops
     function evaluate() private view returns (Score[] memory) {
         Score[] memory scores = new Score[](round.participants.length);
         for (uint i = 0; i < round.participants.length; i++) {
