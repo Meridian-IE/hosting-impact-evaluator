@@ -21,5 +21,6 @@ contract Spark {
       multiaddr,
       retrievable
     ));
+    require(success);
   }
 }
