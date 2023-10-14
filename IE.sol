@@ -3,6 +3,10 @@
 pragma solidity ^0.8.19;
 import "./Spark.sol";
 
+// TODO: Write this as a pure on-chain IE, without external storage, since we're
+// not needing a lot of participants. Otoh, this requires participant management
+// to prevent uncontrolled growth.
+
 contract IE {
     struct Participant {
         string multiaddr;
