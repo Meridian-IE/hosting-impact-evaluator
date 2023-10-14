@@ -6,7 +6,7 @@ contract Spark {
   bytes32 public constant FREQUENCY_HOURLY = keccak256("FREQUENCY_HOURLY");
   bytes32 public constant FREQUENCY_DAILY = keccak256("FREQUENCY_DAILY");
 
-  function schedule(string memory multiaddr, bytes32 frequency) public {
+  function schedule(string memory multiaddr, bytes32 frequency) public payable {
     // TODO: Schedule retrieval testing
     // TODO: Perform retrieval testing
   }
