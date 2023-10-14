@@ -20,14 +20,6 @@ contract IE {
         spark = _spark;
     }
 
-    function stringsEqual(
-        string memory a,
-        string memory b
-    ) public pure returns (bool) {
-        return (keccak256(abi.encodePacked(a)) ==
-            keccak256(abi.encodePacked(b)));
-    }
-
     /**
      * @dev Join the network or top up your balance
      */
@@ -68,5 +60,13 @@ contract IE {
 
     function reward() private {
         // TODO
+    }
+
+    function stringsEqual(
+        string memory a,
+        string memory b
+    ) public pure returns (bool) {
+        return (keccak256(abi.encodePacked(a)) ==
+            keccak256(abi.encodePacked(b)));
     }
 }
