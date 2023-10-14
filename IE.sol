@@ -4,11 +4,13 @@ pragma solidity ^0.8.19;
 import "./Spark.sol";
 
 // TODO: Prevent gas exhaustion attacks
+// TODO: Drop participants
 
 contract IE {
     struct Participant {
         string multiaddr;
         address payable account;
+        bool exists;
     }
     struct Measurement {
         Participant participant;
@@ -24,7 +26,7 @@ contract IE {
         Participant[] participants;
     }
 
-    mapping(string => Participant) participants;
+    mapping(address => Participant) participants;
     Spark spark;
     Round round;
     uint roundLength = 10;
@@ -54,29 +56,31 @@ contract IE {
     function join(string memory multiaddr) public payable {
         require(msg.value > 0, "Retrieval testing funds required");
 
-        if (!stringsEqual(participants[multiaddr].multiaddr, multiaddr)) {
-            participants[multiaddr] = Participant(
+        if (!participants[msg.sender].exists) {
+            participants[msg.sender] = Participant(
                 multiaddr,
-                payable(msg.sender)
+                payable(msg.sender),
+                true
             );
         }
 
-        spark.schedule{value: msg.value}(multiaddr, spark.FREQUENCY_HOURLY());
+        spark.schedule{value: msg.value}(
+            msg.sender,
+            multiaddr,
+            spark.FREQUENCY_HOURLY()
+        );
     }
 
     /**
      * @dev Spark calls this to report retrieval results
      */
-    function sparkCallback(string memory multiaddr, bool retrievable) public {
-        measure(multiaddr, retrievable);
+    function sparkCallback(address account, bool retrievable) public {
+        measure(account, retrievable);
     }
 
-    function measure(string memory multiaddr, bool retrievable) private {
-        Participant memory participant = participants[multiaddr];
-        require(
-            stringsEqual(participant.multiaddr, multiaddr),
-            "Unknown participant"
-        );
+    function measure(address account, bool retrievable) private {
+        Participant memory participant = participants[account];
+        require(participant.exists, "Unknown participant");
         round.measurements.push(Measurement(participant, retrievable));
         maybeAdvanceRound();
     }
@@ -88,12 +92,7 @@ contract IE {
             uint value = 0;
             for (uint j = 0; j < round.measurements.length; j++) {
                 Measurement memory measurement = round.measurements[j];
-                if (
-                    stringsEqual(
-                        measurement.participant.multiaddr,
-                        participant.multiaddr
-                    )
-                ) {
+                if (measurement.participant.account == participant.account) {
                     if (measurement.retrievable) {
                         value += 1;
                     } else {
@@ -112,21 +111,9 @@ contract IE {
             totalScores += scores[i].value;
         }
         for (uint i = 0; i < scores.length; i++) {
-            Participant memory participant = scores[i].participant;
-            uint value = scores[i].value;
-            uint amount = (value * roundReward) / totalScores;
-            require(participant.account.send(amount));
+            Score memory score = scores[i];
+            uint amount = (score.value * roundReward) / totalScores;
+            require(score.participant.account.send(amount));
         }
-    }
-
-    function stringsEqual(
-        string memory a,
-        string memory b
-    ) public pure returns (bool) {
-        if (bytes(a).length != bytes(b).length) {
-            return false;
-        }
-        return (keccak256(abi.encodePacked(a)) ==
-            keccak256(abi.encodePacked(b)));
     }
 }
