@@ -29,7 +29,10 @@ contract IE {
         require(stringsEqual(multiaddr, ""), "Invalid multiaddr");
 
         if (!stringsEqual(participants[multiaddr].multiaddr, multiaddr)) {
-            participants[multiaddr] = Participant(multiaddr, payable(msg.sender));
+            participants[multiaddr] = Participant(
+                multiaddr,
+                payable(msg.sender)
+            );
         }
 
         spark.schedule{value: msg.value}(multiaddr, spark.FREQUENCY_HOURLY());
@@ -48,6 +51,7 @@ contract IE {
             stringsEqual(participant.multiaddr, multiaddr),
             "Unknown participant"
         );
+        // TODO: Accumulate this data in rounds storage
         if (retrievable) {
             // TODO: Pay out in rounds instead
             require(participant.account.send(0.1 ether));
@@ -66,6 +70,9 @@ contract IE {
         string memory a,
         string memory b
     ) public pure returns (bool) {
+        if (bytes(a).length != bytes(b).length) {
+            return false;
+        }
         return (keccak256(abi.encodePacked(a)) ==
             keccak256(abi.encodePacked(b)));
     }
