@@ -107,16 +107,16 @@ contract IE {
     }
 
     function reward(Score[] memory scores) private {
-      uint totalScores = 0;
-      for (uint i = 0; i < scores.length; i++) {
-        totalScores += scores[i].value;
-      }
-      for (uint i = 0; i < scores.length; i++) {
-        Participant memory participant = scores[i].participant;
-        uint value = scores[i].value;
-        uint amount = (value * roundReward) / totalScores;
-        require(participant.account.send(amount));
-      }
+        uint totalScores = 0;
+        for (uint i = 0; i < scores.length; i++) {
+            totalScores += scores[i].value;
+        }
+        for (uint i = 0; i < scores.length; i++) {
+            Participant memory participant = scores[i].participant;
+            uint value = scores[i].value;
+            uint amount = (value * roundReward) / totalScores;
+            require(participant.account.send(amount));
+        }
     }
 
     function stringsEqual(
