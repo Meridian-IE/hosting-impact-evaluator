@@ -3,6 +3,8 @@
 pragma solidity ^0.8.19;
 import "./Spark.sol";
 
+// TODO: Prevent contract from gas exhaustion attacks
+
 contract IE {
     struct Participant {
         string multiaddr;
