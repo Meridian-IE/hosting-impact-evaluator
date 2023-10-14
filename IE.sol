@@ -50,9 +50,7 @@ contract IE {
      * @dev Join the network or top up your balance
      */
     function join(string memory multiaddr) public payable {
-        // TODO: Do we need to keep track of participants?
         require(msg.value > 0, "Retrieval testing funds required");
-        require(stringsEqual(multiaddr, ""), "Invalid multiaddr");
 
         if (!stringsEqual(participants[multiaddr].multiaddr, multiaddr)) {
             participants[multiaddr] = Participant(
