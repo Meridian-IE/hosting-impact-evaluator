@@ -10,11 +10,8 @@ contract IE {
     struct Participant {
         string multiaddr;
         address payable account;
+        int score;
         bool exists;
-    }
-    struct Measurement {
-        Participant participant;
-        bool retrievable;
     }
     struct Score {
         Participant participant;
@@ -22,11 +19,10 @@ contract IE {
     }
     struct Round {
         uint start;
-        Measurement[] measurements;
-        Participant[] participants;
     }
 
     mapping(address => Participant) participants;
+    address[] participantAddresses;
     Spark spark;
     Round round;
     uint roundLength = 10;
@@ -40,8 +36,6 @@ contract IE {
     function advanceRound() private {
         reward(evaluate());
         round.start = block.number;
-        delete round.measurements;
-        delete round.participants;
     }
 
     function maybeAdvanceRound() private {
@@ -60,8 +54,10 @@ contract IE {
             participants[msg.sender] = Participant(
                 multiaddr,
                 payable(msg.sender),
+                0,
                 true
             );
+            participantAddresses.push(msg.sender);
         }
 
         spark.schedule{value: msg.value}(
@@ -81,27 +77,24 @@ contract IE {
     function measure(address account, bool retrievable) private {
         Participant memory participant = participants[account];
         require(participant.exists, "Unknown participant");
-        round.measurements.push(Measurement(participant, retrievable));
+        if (retrievable) {
+            participant.score += 1;
+        } else {
+            participant.score -= 1;
+        }
         maybeAdvanceRound();
     }
 
-    // TODO: Change data structures to not need nested loops
     function evaluate() private view returns (Score[] memory) {
-        Score[] memory scores = new Score[](round.participants.length);
-        for (uint i = 0; i < round.participants.length; i++) {
-            Participant memory participant = round.participants[i];
-            uint value = 0;
-            for (uint j = 0; j < round.measurements.length; j++) {
-                Measurement memory measurement = round.measurements[j];
-                if (measurement.participant.account == participant.account) {
-                    if (measurement.retrievable) {
-                        value += 1;
-                    } else {
-                        value -= 1;
-                    }
-                }
-            }
-            scores[i] = Score(participant, value);
+        Score[] memory scores = new Score[](participantAddresses.length);
+        for (uint i = 0; i < participantAddresses.length; i++) {
+            Participant memory participant = participants[
+                participantAddresses[i]
+            ];
+            uint score = participant.score < 0
+                ? 0
+                : uint(participant.score);
+            scores[i] = Score(participant, score);
         }
         return scores;
     }
