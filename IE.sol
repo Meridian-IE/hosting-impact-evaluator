@@ -10,7 +10,7 @@ contract IE {
     struct Participant {
         string multiaddr;
         address payable account;
-        int score;
+        int successfulRetrievals;
         bool exists;
     }
     struct Score {
@@ -78,9 +78,9 @@ contract IE {
         Participant memory participant = participants[account];
         require(participant.exists, "Unknown participant");
         if (retrievable) {
-            participant.score += 1;
+            participant.successfulRetrievals += 1;
         } else {
-            participant.score -= 1;
+            participant.successfulRetrievals -= 1;
         }
         maybeAdvanceRound();
     }
@@ -91,9 +91,9 @@ contract IE {
             Participant memory participant = participants[
                 participantAddresses[i]
             ];
-            uint score = participant.score < 0
+            uint score = participant.successfulRetrievals < 0
                 ? 0
-                : uint(participant.score);
+                : uint(participant.successfulRetrievals);
             scores[i] = Score(participant, score);
         }
         return scores;
