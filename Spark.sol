@@ -15,6 +15,9 @@ contract Spark {
         // TODO: Perform retrieval testing
     }
 
+    // This assumes the full Spark protocol has been executed, including fraud detection.
+    // The result is the outcome of the committee process, and not an individual node's
+    // test.
     function onResult(
         address account,
         bool retrievable
